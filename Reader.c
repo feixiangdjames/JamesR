@@ -9,23 +9,23 @@
 # ECHO "=---------------------------------------="
 # ECHO "|  COMPILERS - ALGONQUIN COLLEGE (S24)  |"
 # ECHO "=---------------------------------------="
-# ECHO "    @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    ”
-# ECHO "    @@                             @@    ”
-# ECHO "    @@           %&@@@@@@@@@@@     @@    ”
-# ECHO "    @@       @%% (@@@@@@@@@  @     @@    ”
-# ECHO "    @@      @& @   @ @       @     @@    ”
-# ECHO "    @@     @ @ %  / /   @@@@@@     @@    ”
-# ECHO "    @@      & @ @  @@              @@    ”
-# ECHO "    @@       @/ @*@ @ @   @        @@    ”
-# ECHO "    @@           @@@@  @@ @ @      @@    ”
-# ECHO "    @@            /@@    @@@ @     @@    ”
-# ECHO "    @@     @      / /     @@ @     @@    ”
-# ECHO "    @@     @ @@   /@/   @@@ @      @@    ”
-# ECHO "    @@     @@@@@@@@@@@@@@@         @@    ”
-# ECHO "    @@                             @@    ”
-# ECHO "    @@         S O F I A           @@    ”
-# ECHO "    @@                             @@    ”
-# ECHO "    @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    ”
+# ECHO "    @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    ?
+# ECHO "    @@                             @@    ?
+# ECHO "    @@           %&@@@@@@@@@@@     @@    ?
+# ECHO "    @@       @%% (@@@@@@@@@  @     @@    ?
+# ECHO "    @@      @& @   @ @       @     @@    ?
+# ECHO "    @@     @ @ %  / /   @@@@@@     @@    ?
+# ECHO "    @@      & @ @  @@              @@    ?
+# ECHO "    @@       @/ @*@ @ @   @        @@    ?
+# ECHO "    @@           @@@@  @@ @ @      @@    ?
+# ECHO "    @@            /@@    @@@ @     @@    ?
+# ECHO "    @@     @      / /     @@ @     @@    ?
+# ECHO "    @@     @ @@   /@/   @@@ @      @@    ?
+# ECHO "    @@     @@@@@@@@@@@@@@@         @@    ?
+# ECHO "    @@                             @@    ?
+# ECHO "    @@         S O F I A           @@    ?
+# ECHO "    @@                             @@    ?
+# ECHO "    @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    ?
 # ECHO "                                         "
 # ECHO "[READER SCRIPT .........................]"
 # ECHO "                                         "
@@ -35,7 +35,7 @@
 ***********************************************************
 * File name: Reader.c
 * Compiler: MS Visual Studio 2022
-* Course: CST 8152 – Compilers, Lab Section: [011, 012, 013]
+* Course: CST 8152 ?Compilers, Lab Section: [011, 012, 013]
 * Assignment: A12.
 * Date: May 01 2024
 * Professor: Paulo Sousa
@@ -84,17 +84,22 @@
 BufferPointer readerCreate(jamesr_intg size, jamesr_intg increment, jamesr_intg mode) {
 	BufferPointer readerPointer;
 	/* TO_DO: Defensive programming */
-	if ((size < 0) || (increment <0)){
+	if ((size < 0) || (increment <0) || (mode != MODE_ADDIT && mode != MODE_FIXED && mode != MODE_MULTI)){
 		return NULL;
 	}
+	
 	/* TO_DO: Adjust the values according to parameters */
-
 	readerPointer = (BufferPointer)calloc(1, sizeof(Buffer));
 	if (!readerPointer)
 		return NULL;
 	readerPointer->content = (jamesr_string)malloc(size);
 	/* TO_DO: Defensive programming */
+	if (!readerPointer->content)
+		return NULL;
 	/* TO_DO: Initialize the histogram */
+	for (jamesr_intg i = 0; i < NCHAR; i++) {
+		readerPointer->histogram[i] = 0;
+	}
 	if (size != 0)
 		readerPointer->size = size;
 	else
@@ -108,7 +113,9 @@ BufferPointer readerCreate(jamesr_intg size, jamesr_intg increment, jamesr_intg 
 	else
 		readerPointer->increment = MODE_FIXED;
 	/* TO_DO: Initialize flags */
+	readerPointer->flags = READER_DEFAULT_FLAG;
 	/* TO_DO: The created flag must be signalized as EMP */
+	readerPointer->flags |= FLAG_EMP;
 	/* NEW: Cleaning the content */
 	if (readerPointer->content)
 		readerPointer->content[0] = READER_TERMINATOR;
@@ -139,28 +146,62 @@ BufferPointer readerAddChar(BufferPointer const readerPointer, jamesr_char ch) {
 	jamesr_string tempReader = NULL;
 	jamesr_intg newSize = 0;
 	/* TO_DO: Defensive programming */
+	if (!readerPointer) {
+		return NULL;
+	}
+	if (!ch) {
+		return readerPointer;
+	}
 	/* TO_DO: Reset Realocation */
+	readerPointer->flags &= ~FLAG_REL;
 	/* TO_DO: Test the inclusion of chars */
 	if (readerPointer->position.wrte * (jamesr_intg)sizeof(jamesr_char) < readerPointer->size) {
 		/* TO_DO: This buffer is NOT full */
-	} else {
+		
+	}
+	else {
 		/* TO_DO: Reset Full flag */
+		readerPointer->flags &= ~FLAG_FUL;
 		switch (readerPointer->mode) {
 		case MODE_FIXED:
 			return NULL;
 		case MODE_ADDIT:
 			/* TO_DO: Adjust new size */
+			newSize = readerPointer->size + readerPointer->increment;
 			/* TO_DO: Defensive programming */
+			if (!(newSize > 0 || newSize < READER_MAX_SIZE)) {
+				return NULL;
+			}
 			break;
 		case MODE_MULTI:
 			/* TO_DO: Adjust new size */
+			newSize = readerPointer->size * readerPointer->increment;
 			/* TO_DO: Defensive programming */
+			if (!(newSize > 0 || newSize < READER_MAX_SIZE)) {
+				return NULL;
+			}
+
 			break;
 		default:
 			return NULL;
 		}
 		/* TO_DO: New reader allocation */
+		tempReader = (jamesr_string)malloc(readerPointer->position.wrte);
 		/* TO_DO: Defensive programming */
+		if (!tempReader) {
+			return NULL;
+		}else {
+			for (int i = 0; i < readerPointer->position.wrte; i++) {
+				tempReader[i] = readerPointer->content[i];
+			}
+			tempReader = (jamesr_string)realloc(tempReader, newSize);
+			if (!tempReader) {
+				return NULL;
+			}
+		
+		}
+		
+		readerPointer->content = tempReader;
 		/* TO_DO: Check Relocation */
 	}
 	/* TO_DO: Add the char */
@@ -185,7 +226,10 @@ BufferPointer readerAddChar(BufferPointer const readerPointer, jamesr_char ch) {
 */
 jamesr_boln readerClear(BufferPointer const readerPointer) {
 	/* TO_DO: Defensive programming */
+	if (!readerPointer)
+		return JAMESR_FALSE;
 	/* TO_DO: Adjust flags original */
+	readerPointer->flags = FLAG_EMP;
 	readerPointer->position.wrte = readerPointer->position.mark = readerPointer->position.read = 0;
 	return JAMESR_TRUE;
 }
@@ -206,8 +250,13 @@ jamesr_boln readerClear(BufferPointer const readerPointer) {
 */
 jamesr_boln readerFree(BufferPointer const readerPointer) {
 	/* TO_DO: Defensive programming */
+	if (!readerPointer) {
+		return JAMESR_FALSE;
+	}
 	/* TO_DO: Free pointers */
+	free(readerPointer);
 	return JAMESR_TRUE;
+	return ;
 }
 
 /*
@@ -226,7 +275,11 @@ jamesr_boln readerFree(BufferPointer const readerPointer) {
 */
 jamesr_boln readerIsFull(BufferPointer const readerPointer) {
 	/* TO_DO: Defensive programming */
+	if (!readerPointer)
+		return JAMESR_FALSE;
 	/* TO_DO: Check flag if buffer is FUL */
+	if (readerPointer->flags == FLAG_FUL)
+		return JAMESR_TRUE;
 	return JAMESR_FALSE;
 }
 
@@ -247,7 +300,11 @@ jamesr_boln readerIsFull(BufferPointer const readerPointer) {
 */
 jamesr_boln readerIsEmpty(BufferPointer const readerPointer) {
 	/* TO_DO: Defensive programming */
+	if (!readerPointer)
+		return JAMESR_FALSE;
 	/* TO_DO: Check flag if buffer is EMP */
+	if (readerPointer->flags == FLAG_EMP)
+		return JAMESR_TRUE;
 	return JAMESR_FALSE;
 }
 
@@ -268,6 +325,10 @@ jamesr_boln readerIsEmpty(BufferPointer const readerPointer) {
 */
 jamesr_boln readerSetMark(BufferPointer const readerPointer, jamesr_intg mark) {
 	/* TO_DO: Defensive programming */
+	if (!readerPointer)
+		return JAMESR_FALSE;
+	if (!(mark > 0 && mark < readerPointer->position.wrte))
+		return JAMESR_FALSE;
 	/* TO_DO: Adjust mark */
 	readerPointer->position.mark = mark;
 	return JAMESR_TRUE;
@@ -292,6 +353,9 @@ jamesr_intg readerPrint(BufferPointer const readerPointer) {
 	jamesr_intg cont = 0;
 	jamesr_char c;
 	/* TO_DO: Defensive programming (including invalid chars) */
+	if (!readerPointer) {
+		return cont;
+	}
 	c = readerGetChar(readerPointer);
 	/* TO_DO: Check flag if buffer EOB has achieved */
 	while (cont < readerPointer->position.wrte) {
@@ -322,6 +386,8 @@ jamesr_intg readerLoad(BufferPointer const readerPointer, FILE* const fileDescri
 	jamesr_intg size = 0;
 	jamesr_char c;
 	/* TO_DO: Defensive programming */
+	if (!fileDescriptor||!readerPointer)
+		return size;
 	c = (jamesr_char)fgetc(fileDescriptor);
 	while (!feof(fileDescriptor)) {
 		if (!readerAddChar(readerPointer, c)) {
@@ -332,6 +398,7 @@ jamesr_intg readerLoad(BufferPointer const readerPointer, FILE* const fileDescri
 		size++;
 	}
 	/* TO_DO: Defensive programming */
+
 	return size;
 }
 
@@ -352,8 +419,12 @@ jamesr_intg readerLoad(BufferPointer const readerPointer, FILE* const fileDescri
 */
 jamesr_boln readerRecover(BufferPointer const readerPointer) {
 	/* TO_DO: Defensive programming */
+	if (!readerPointer) {
+		return JAMESR_FALSE;
+	}
 	/* TO_DO: Recover positions */
 	readerPointer->position.read = 0;
+	readerPointer->position.mark = 0;
 	return JAMESR_TRUE;
 }
 
@@ -374,7 +445,11 @@ jamesr_boln readerRecover(BufferPointer const readerPointer) {
 */
 jamesr_boln readerRetract(BufferPointer const readerPointer) {
 	/* TO_DO: Defensive programming */
+	if (!readerPointer) {
+		return JAMESR_FALSE;
+	}
 	/* TO_DO: Retract (return 1 pos read) */
+	readerPointer->position.read--;
 	return JAMESR_TRUE;
 }
 
@@ -395,6 +470,9 @@ jamesr_boln readerRetract(BufferPointer const readerPointer) {
 */
 jamesr_boln readerRestore(BufferPointer const readerPointer) {
 	/* TO_DO: Defensive programming */
+	if (!readerPointer) {
+		return JAMESR_FALSE;
+	}
 	/* TO_DO: Restore positions (read/mark) */
 	readerPointer->position.read = readerPointer->position.mark;
 	return JAMESR_TRUE;
@@ -417,9 +495,19 @@ jamesr_boln readerRestore(BufferPointer const readerPointer) {
 */
 jamesr_char readerGetChar(BufferPointer const readerPointer) {
 	/* TO_DO: Defensive programming */
+	if (!readerPointer) {
+		return READER_ERROR;
+	}
 	/* TO_DO: Check condition to read/wrte */
-	/* TO_DO: Set EOB flag */
-	/* TO_DO: Reset EOB flag */
+	if (readerPointer->position.read == readerPointer->position.wrte)
+		/* TO_DO: Set EOB flag */
+	{
+		readerPointer->flags |= FLAG_END;
+	}
+	else {
+		/* TO_DO: Reset EOB flag */
+		readerPointer->flags &= ~FLAG_END;
+	}
 	if (readerPointer->position.wrte>0)
 		return readerPointer->content[readerPointer->position.read++];
 	return READER_TERMINATOR;
@@ -443,6 +531,12 @@ jamesr_char readerGetChar(BufferPointer const readerPointer) {
 */
 jamesr_string readerGetContent(BufferPointer const readerPointer, jamesr_intg pos) {
 	/* TO_DO: Defensive programming */
+	if (!readerPointer) {
+		return NULL;
+	}
+	if (pos<0 || pos>readerPointer->position.wrte) {
+		return NULL;
+	}
 	/* TO_DO: Return content (string) */
 	return readerPointer->content + pos;;
 }
@@ -465,6 +559,9 @@ jamesr_string readerGetContent(BufferPointer const readerPointer, jamesr_intg po
 */
 jamesr_intg readerGetPosRead(BufferPointer const readerPointer) {
 	/* TO_DO: Defensive programming */
+	if (!readerPointer) {
+		return READER_ERROR;
+	}
 	/* TO_DO: Return read */
 	return readerPointer->position.read;
 }
@@ -486,8 +583,11 @@ jamesr_intg readerGetPosRead(BufferPointer const readerPointer) {
 */
 jamesr_intg readerGetPosWrte(BufferPointer const readerPointer) {
 	/* TO_DO: Defensive programming */
+	if (!readerPointer) {
+		return READER_ERROR;
+	}
 	/* TO_DO: Return wrte */
-	return 0;
+	return readerPointer->position.wrte;
 }
 
 
@@ -507,8 +607,11 @@ jamesr_intg readerGetPosWrte(BufferPointer const readerPointer) {
 */
 jamesr_intg readerGetPosMark(BufferPointer const readerPointer) {
 	/* TO_DO: Defensive programming */
+	if (!readerPointer) {
+		return READER_ERROR;
+	}
 	/* TO_DO: Return mark */
-	return 0;
+	return readerPointer->position.mark;
 }
 
 
@@ -528,8 +631,11 @@ jamesr_intg readerGetPosMark(BufferPointer const readerPointer) {
 */
 jamesr_intg readerGetSize(BufferPointer const readerPointer) {
 	/* TO_DO: Defensive programming */
+	if (!readerPointer) {
+		return READER_ERROR;
+	}
 	/* TO_DO: Return size */
-	return 0;
+	return readerPointer->size;
 }
 
 /*
@@ -548,8 +654,11 @@ jamesr_intg readerGetSize(BufferPointer const readerPointer) {
 */
 jamesr_intg readerGetInc(BufferPointer const readerPointer) {
 	/* TO_DO: Defensive programming */
+	if (!readerPointer) {
+		return READER_ERROR;
+	}
 	/* TO_DO: Return increment */
-	return 0;
+	return readerPointer->increment;
 }
 
 /*
@@ -568,8 +677,11 @@ jamesr_intg readerGetInc(BufferPointer const readerPointer) {
 */
 jamesr_intg readerGetMode(BufferPointer const readerPointer) {
 	/* TO_DO: Defensive programming */
+	if (!readerPointer) {
+		return READER_ERROR;
+	}
 	/* TO_DO: Return mode */
-	return 0;
+	return readerPointer->mode;
 }
 
 
@@ -589,8 +701,12 @@ jamesr_intg readerGetMode(BufferPointer const readerPointer) {
 */
 jamesr_byte readerGetFlags(BufferPointer const readerPointer) {
 	/* TO_DO: Defensive programming */
+	if (!readerPointer) {
+	return READER_ERROR;
+	}
 	/* TO_DO: Return flags */
-	return 0;
+
+	return readerPointer->flags;
 }
 
 
@@ -609,7 +725,14 @@ jamesr_byte readerGetFlags(BufferPointer const readerPointer) {
 */
 jamesr_void readerPrintStat(BufferPointer const readerPointer) {
 	/* TO_DO: Defensive programming */
+	if (!readerPointer) {
+		return;
+	}
 	/* TO_DO: Print the histogram */
+	for(int i = 0; i < NCHAR; i++){
+		printf("%d", readerPointer->histogram[i]);
+	}
+	
 }
 
 /*
@@ -627,8 +750,11 @@ jamesr_void readerPrintStat(BufferPointer const readerPointer) {
 */
 jamesr_intg readerNumErrors(BufferPointer const readerPointer) {
 	/* TO_DO: Defensive programming */
+	if (!readerPointer) {
+		return READER_ERROR;
+	}
 	/* TO_DO: Returns the number of errors */
-	return 0;
+	return readerPointer->numReaderErrors;
 }
 
 /*
@@ -648,6 +774,17 @@ jamesr_intg readerNumErrors(BufferPointer const readerPointer) {
 
 jamesr_void readerChecksum(BufferPointer readerPointer) {
 	/* TO_DO: Defensive programming */
+	if (!readerPointer) {
+		return;
+	}
 	/* TO_DO: Adjust the checksum to flags */
+	jamesr_intg sum=0;
+	for (jamesr_intg i = 0; i < readerPointer->size;i++) {
+		sum += readerPointer->content[i];
+	}
+	sum &= 0x0f;// to have initial 4 bits
+	sum = sum << 4;
+	sum &= 0xf0;
+	readerPointer->flags |= sum;
 	return;
 }

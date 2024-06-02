@@ -9,23 +9,23 @@
 # ECHO "=---------------------------------------="
 # ECHO "|  COMPILERS - ALGONQUIN COLLEGE (S24)  |"
 # ECHO "=---------------------------------------="
-# ECHO "    @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    ”
-# ECHO "    @@                             @@    ”
-# ECHO "    @@           %&@@@@@@@@@@@     @@    ”
-# ECHO "    @@       @%% (@@@@@@@@@  @     @@    ”
-# ECHO "    @@      @& @   @ @       @     @@    ”
-# ECHO "    @@     @ @ %  / /   @@@@@@     @@    ”
-# ECHO "    @@      & @ @  @@              @@    ”
-# ECHO "    @@       @/ @*@ @ @   @        @@    ”
-# ECHO "    @@           @@@@  @@ @ @      @@    ”
-# ECHO "    @@            /@@    @@@ @     @@    ”
-# ECHO "    @@     @      / /     @@ @     @@    ”
-# ECHO "    @@     @ @@   /@/   @@@ @      @@    ”
-# ECHO "    @@     @@@@@@@@@@@@@@@         @@    ”
-# ECHO "    @@                             @@    ”
-# ECHO "    @@         S O F I A           @@    ”
-# ECHO "    @@                             @@    ”
-# ECHO "    @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    ”
+# ECHO "    @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    ?
+# ECHO "    @@                             @@    ?
+# ECHO "    @@           %&@@@@@@@@@@@     @@    ?
+# ECHO "    @@       @%% (@@@@@@@@@  @     @@    ?
+# ECHO "    @@      @& @   @ @       @     @@    ?
+# ECHO "    @@     @ @ %  / /   @@@@@@     @@    ?
+# ECHO "    @@      & @ @  @@              @@    ?
+# ECHO "    @@       @/ @*@ @ @   @        @@    ?
+# ECHO "    @@           @@@@  @@ @ @      @@    ?
+# ECHO "    @@            /@@    @@@ @     @@    ?
+# ECHO "    @@     @      / /     @@ @     @@    ?
+# ECHO "    @@     @ @@   /@/   @@@ @      @@    ?
+# ECHO "    @@     @@@@@@@@@@@@@@@         @@    ?
+# ECHO "    @@                             @@    ?
+# ECHO "    @@         S O F I A           @@    ?
+# ECHO "    @@                             @@    ?
+# ECHO "    @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    ?
 # ECHO "                                         "
 # ECHO "[READER SCRIPT .........................]"
 # ECHO "                                         "
@@ -35,7 +35,7 @@
 ************************************************************
 * File name: Reader.h
 * Compiler: MS Visual Studio 2022
-* Course: CST 8152 – Compilers, Lab Section: [011, 012]
+* Course: CST 8152 ?Compilers, Lab Section: [011, 012]
 * Assignment: A12.
 * Date: May 01 2024
 * Professor: Paulo Sousa
@@ -92,9 +92,9 @@ enum READER_MODE {
 #define READER_DEFAULT_FLAG 0x00 	/* (0000.0000)_2 = (000)_10 */
 
 /* TO_DO: BIT 3: END = End of buffer flag */
-#define FLAG_END 0b00000100 /*Hex: 0x04*/
+#define FLAG_END 0b00001000 /*Hex: 0x08*/
 /* TO_DO: BIT 2: REL = Rellocation memory flag */
-#define FLAG_REL 0b00000011 /*Hex: 0x03*/
+#define FLAG_REL 0b00000100 /*Hex: 0x04*/
 /* TO_DO: BIT 1: FUL = Buffer full flag */
 #define FLAG_FUL 0b00000010 /*Hex: 0x02*/
 /* TO_DO: BIT 0: EMP = Buffer empty flag */
