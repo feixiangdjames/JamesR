@@ -2,7 +2,7 @@
 ************************************************************
 * COMPILERS COURSE - Algonquin College
 * Code version: Summer, 2024
-* Author: TO_DO
+* Author: Chenglong Wang
 * Professors: Paulo Sousa
 ************************************************************
 #

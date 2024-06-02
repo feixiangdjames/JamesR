@@ -109,7 +109,7 @@ BufferPointer readerCreate(jamesr_intg size, jamesr_intg increment, jamesr_intg 
 	else
 		readerPointer->increment = READER_DEFAULT_INCREMENT;
 	if (mode == MODE_ADDIT || mode == MODE_FIXED || mode == MODE_MULTI)
-		readerPointer->increment = increment;
+		readerPointer->mode = mode;
 	else
 		readerPointer->increment = MODE_FIXED;
 	/* TO_DO: Initialize flags */
@@ -157,11 +157,11 @@ BufferPointer readerAddChar(BufferPointer const readerPointer, jamesr_char ch) {
 	/* TO_DO: Test the inclusion of chars */
 	if (readerPointer->position.wrte * (jamesr_intg)sizeof(jamesr_char) < readerPointer->size) {
 		/* TO_DO: This buffer is NOT full */
-		
+		readerPointer->flags &= ~FLAG_FUL;
 	}
 	else {
 		/* TO_DO: Reset Full flag */
-		readerPointer->flags &= ~FLAG_FUL;
+		readerPointer->flags |= FLAG_FUL;
 		switch (readerPointer->mode) {
 		case MODE_FIXED:
 			return NULL;
@@ -200,13 +200,20 @@ BufferPointer readerAddChar(BufferPointer const readerPointer, jamesr_char ch) {
 			}
 		
 		}
-		
+		free(readerPointer->content);
 		readerPointer->content = tempReader;
+		if (!readerPointer->content) {
+			readerPointer->flags |= FLAG_REL;
+		}
 		/* TO_DO: Check Relocation */
+		if ((readerPointer->flags & FLAG_REL)==0) {
+			return NULL;
+		}
 	}
 	/* TO_DO: Add the char */
 	readerPointer->content[readerPointer->position.wrte++] = ch;
 	/* TO_DO: Updates histogram */
+	readerPointer->histogram[ch]++;
 	return readerPointer;
 }
 
@@ -256,7 +263,6 @@ jamesr_boln readerFree(BufferPointer const readerPointer) {
 	/* TO_DO: Free pointers */
 	free(readerPointer);
 	return JAMESR_TRUE;
-	return ;
 }
 
 /*
@@ -278,7 +284,7 @@ jamesr_boln readerIsFull(BufferPointer const readerPointer) {
 	if (!readerPointer)
 		return JAMESR_FALSE;
 	/* TO_DO: Check flag if buffer is FUL */
-	if (readerPointer->flags == FLAG_FUL)
+	if (!(readerPointer->flags & FLAG_FUL)==0)
 		return JAMESR_TRUE;
 	return JAMESR_FALSE;
 }
@@ -303,7 +309,7 @@ jamesr_boln readerIsEmpty(BufferPointer const readerPointer) {
 	if (!readerPointer)
 		return JAMESR_FALSE;
 	/* TO_DO: Check flag if buffer is EMP */
-	if (readerPointer->flags == FLAG_EMP)
+	if (!(readerPointer->flags & FLAG_EMP)==0)
 		return JAMESR_TRUE;
 	return JAMESR_FALSE;
 }
@@ -730,9 +736,12 @@ jamesr_void readerPrintStat(BufferPointer const readerPointer) {
 	}
 	/* TO_DO: Print the histogram */
 	for(int i = 0; i < NCHAR; i++){
-		printf("%d", readerPointer->histogram[i]);
-	}
+		if (readerPointer->histogram[i] > 0) {
+			printf("B[%c]=%d, ", i, readerPointer->histogram[i]);
+		}
 	
+	}
+	printf("\n");
 }
 
 /*
