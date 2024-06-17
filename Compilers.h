@@ -110,6 +110,7 @@ Main functions signatures
 ------------------------------------------------------------
 */
 jamesr_intg mainReader(jamesr_intg argc, jamesr_string* argv);
+jamesr_intg mainScanner(jamesr_intg argc, jamesr_string* argv);
 
 /* 
 TO_DO: Include later mainScaner (A22) and mainParser (A32)

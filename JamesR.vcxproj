@@ -129,14 +129,20 @@
   <ItemGroup>
     <ClCompile Include="Compilers.c" />
     <ClCompile Include="MainReader.c" />
+    <ClCompile Include="MainScanner.c" />
     <ClCompile Include="Reader.c" />
+    <ClCompile Include="Scanner.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Compilers.h" />
     <ClInclude Include="Reader.h" />
+    <ClInclude Include="Scanner.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="test.jr" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="CMakeLists.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

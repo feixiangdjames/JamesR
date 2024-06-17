@@ -194,10 +194,7 @@ BufferPointer readerAddChar(BufferPointer const readerPointer, jamesr_char ch) {
 			for (int i = 0; i < readerPointer->position.wrte; i++) {
 				tempReader[i] = readerPointer->content[i];
 			}
-			tempReader = (jamesr_string)realloc(tempReader, newSize);
-			if (!tempReader) {
-				return NULL;
-			}
+
 		
 		}
 		free(readerPointer->content);
