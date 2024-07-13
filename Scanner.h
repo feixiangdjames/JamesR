@@ -162,7 +162,7 @@ typedef struct scannerData {
 #define CHRCOL3 '&'
 #define CHRCOL4 '\''
 #define CHRCOL6 '#'
-
+#
 /* These constants will be used on VID / MID function */
 #define MNID_SUF '&'
 #define COMM_SYM '#'
@@ -173,23 +173,33 @@ typedef struct scannerData {
 #define FS		10		/* Illegal state */
 
  /* TO_DO: State transition table definition */
-#define NUM_STATES		10
-#define CHAR_CLASSES	8
+#define NUM_STATES		20
+#define CHAR_CLASSES	12
 
 /* TO_DO: Transition table - type of states defined in separate table */
 static jamesr_intg transitionTable[NUM_STATES][CHAR_CLASSES] = {
-/*    [A-z],[0-9],    _,    &,   \', SEOF,    #, other
-	   L(0), D(1), U(2), M(3), Q(4), E(5), C(6),  O(7) */
-	{     1, ESNR, ESNR, ESNR,    4, ESWR,	  6, ESNR},	// S0: NOAS
-	{     1,    1,    1,    2,	  3,    3,   3,    3},	// S1: NOAS
-	{    FS,   FS,   FS,   FS,   FS,   FS,	 FS,   FS},	// S2: ASNR (MVID)
-	{    FS,   FS,   FS,   FS,   FS,   FS,	 FS,   FS},	// S3: ASWR (KEY)
-	{     4,    4,    4,    4,    5, ESWR,	  4,    4},	// S4: NOAS
-	{    FS,   FS,   FS,   FS,   FS,   FS,	 FS,   FS},	// S5: ASNR (SL)
-	{     6,    6,    6,    6,    6, ESWR,	  7,    6},	// S6: NOAS
-	{    FS,   FS,   FS,   FS,   FS,   FS,	 FS,   FS},	// S7: ASNR (COM)
-	{    FS,   FS,   FS,   FS,   FS,   FS,	 FS,   FS},	// S8: ASNR (ES)
-	{    FS,   FS,   FS,   FS,   FS,   FS,	 FS,   FS}  // S9: ASWR (ER)
+/*    [A-z],[0-9],  _,    .,   #,    ',     ",    /,     *,      -,    /n,   Others
+	  L(0), D(1), U(2), P(3), A(4), Q(5),  R(6) , S(7), W(8),   H(9),  E(10), O(11) */
+	{   1,   3,   ESNR,   5,    8,   ESNR,  ESNR,  ESNR, ESNR,  ESNR, ESNR,   ESNR},// S0: NOAS
+	{   1,   1,    2,     2,    2,    2,    2,    2,    2,    2,   2,     2},// S1: FSWR
+    {   FS,  FS,   FS,   FS,    FS,   FS,   FS,   FS,   FS,   FS,  FS,    FS},// S2: FSWR
+    {   4,   1,    4,     5,     4,    4,    4,    4,    4,    4,   4,     4},// S3: NOAS
+	{   FS,  FS,   FS,   FS,    FS,   FS,   FS,   FS,   FS,   FS,   FS,   FS},// S4: FSWR
+	{  ESNR, 6,   ESNR,  ESNR,  ESNR, ESNR, ESNR, ESNR, ESNR, ESNR,ESNR,ESNR},// S5: NOAS
+	{   7,   6,     7,     7,    7,     7,   7,     7,    7,   7,  7,  7},// S6: NOAS
+	{   FS,  FS,   FS,   FS,    FS,   FS,   FS,   FS,   FS,   FS,  FS,  FS},// S7: FSWR
+	{   9,   9,   9,  9,    9,    9,   9,  9, 9,  9, ESNR,9},// S8: NOAS
+	{   9,  9,   9,   9,    9,   9,   9,   9,   9,   10, 9},// S9:NOAS
+	{   FS,  FS,   FS,   FS,    FS,   FS,   FS,   FS,   FS,   FS,    FS},// S10: FSNR
+	{   1,   1,   ESNR,  6,    8,    11,   13,  ESNR, ESNR,  ESNR, ESNR},// S11: NOAS
+	{  FS,  FS,   FS,   FS,    FS,   FS,   FS,   FS,   FS,   FS,    FS},// S12: NOAS
+	{   1,   1,   ESNR,  6,    8,    11,   13,  ESNR, ESNR,  ESNR, ESNR},// S13: NOAS
+	{   FS,  FS,   FS,   FS,    FS,   FS,  FS,   FS,   FS,   FS,    FS},// S14: NOAS
+	{   1,   1,   ESNR,  6,    8,    11,   13,  ESNR, ESNR,  ESNR, ESNR},// S15: NOAS
+	{   1,   1,   ESNR,  6,    8,    11,   13,  ESNR, ESNR,  ESNR, ESNR},// S16: NOAS
+	{   1,   1,   ESNR,  6,    8,    11,   13,  ESNR, ESNR,  ESNR, ESNR},// S17: NOAS
+	{   1,   1,   ESNR,  6,    8,    11,   13,  ESNR, ESNR,  ESNR, ESNR},// S18: NOAS
+	{   FS,  FS,   FS,   FS,    FS,   FS,  FS,   FS,   FS,   FS,    FS},// S19: NOAS
 };
 
 /* Define accepting states types */
@@ -201,14 +211,24 @@ static jamesr_intg transitionTable[NUM_STATES][CHAR_CLASSES] = {
 static jamesr_intg stateType[NUM_STATES] = {
 	NOFS, /* 00 */
 	NOFS, /* 01 */
-	FSNR, /* 02 (MID) - Methods */
-	FSWR, /* 03 (KEY) */
-	NOFS, /* 04 */
-	FSNR, /* 05 (SL) */
-	NOFS, /* 06 */
-	FSNR, /* 07 (COM) */
-	FSNR, /* 08 (Err1 - no retract) */
-	FSWR  /* 09 (Err2 - retract) */
+	FSWR, /* 02 (VID|MET|KEY) -  */
+	NOFS, /* 03  */
+	FSWR, /* 04 (IL)Integer Literal*/
+	NOFS, /* 05*/
+	NOFS, /* 06*/
+	FSWR, /* 07 (FL)Float Literal*/
+	NOFS, /* 08 */
+	NOFS, /* 09 */
+	FSNR, /* 10 (SCL) single comment line*/
+	NOFS, /* 11 */
+	FSNR, /* 12 (MID) - Methods */
+	FSWR, /* 13 (KEY) */
+	NOFS, /* 14 */
+	FSNR, /* 15 */
+	NOFS, /* 16 */
+	FSNR, /* 17  */
+	FSNR, /* 18 */
+	FSWR  /* 19 */
 };
 
 /*
