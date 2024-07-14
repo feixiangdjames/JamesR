@@ -159,9 +159,14 @@ typedef struct scannerData {
 /* TO_DO: Define lexeme FIXED classes */
 /* These constants will be used on nextClass */
 #define CHRCOL2 '_'
-#define CHRCOL3 '&'
-#define CHRCOL4 '\''
-#define CHRCOL6 '#'
+#define CHRCOL3 '.'
+#define CHRCOL4 '#'
+#define CHRCOL5 '\''
+#define CHRCOL6 '"'
+#define CHRCOL7 '/'
+#define CHRCOL8 '*'
+#define CHRCOL9 '-'
+#define CHRCOL10 '/n'
 #
 /* These constants will be used on VID / MID function */
 #define MNID_SUF '&'
@@ -180,7 +185,7 @@ typedef struct scannerData {
 static jamesr_intg transitionTable[NUM_STATES][CHAR_CLASSES] = {
 /*    [A-z],[0-9],  _,    .,   #,    ',     ",    /,     *,      -,    /n,   Others
 	  L(0), D(1), U(2), P(3), A(4), Q(5),  R(6) , S(7), W(8),   H(9),  E(10), O(11) */
-	{   1,   3,   ESNR,   5,    8,   ESNR,  ESNR,  ESNR, ESNR,  ESNR, ESNR,   ESNR},// S0: NOAS
+	{   1,   3,   ESNR,   5,    8,   11,  13,  15, ESNR,  ESNR, ESNR,   ESNR},// S0: NOAS
 	{   1,   1,    2,     2,    2,    2,    2,    2,    2,    2,   2,     2},// S1: FSWR
     {   FS,  FS,   FS,   FS,    FS,   FS,   FS,   FS,   FS,   FS,  FS,    FS},// S2: FSWR
     {   4,   1,    4,     5,     4,    4,    4,    4,    4,    4,   4,     4},// S3: NOAS
@@ -191,14 +196,14 @@ static jamesr_intg transitionTable[NUM_STATES][CHAR_CLASSES] = {
 	{   9,   9,   9,  9,    9,    9,   9,  9, 9,  9, ESNR,9},// S8: NOAS
 	{   9,  9,   9,   9,    9,   9,   9,   9,   9,   10, 9},// S9:NOAS
 	{   FS,  FS,   FS,   FS,    FS,   FS,   FS,   FS,   FS,   FS,    FS},// S10: FSNR
-	{   1,   1,   ESNR,  6,    8,    11,   13,  ESNR, ESNR,  ESNR, ESNR},// S11: NOAS
-	{  FS,  FS,   FS,   FS,    FS,   FS,   FS,   FS,   FS,   FS,    FS},// S12: NOAS
-	{   1,   1,   ESNR,  6,    8,    11,   13,  ESNR, ESNR,  ESNR, ESNR},// S13: NOAS
-	{   FS,  FS,   FS,   FS,    FS,   FS,  FS,   FS,   FS,   FS,    FS},// S14: NOAS
-	{   1,   1,   ESNR,  6,    8,    11,   13,  ESNR, ESNR,  ESNR, ESNR},// S15: NOAS
-	{   1,   1,   ESNR,  6,    8,    11,   13,  ESNR, ESNR,  ESNR, ESNR},// S16: NOAS
-	{   1,   1,   ESNR,  6,    8,    11,   13,  ESNR, ESNR,  ESNR, ESNR},// S17: NOAS
-	{   1,   1,   ESNR,  6,    8,    11,   13,  ESNR, ESNR,  ESNR, ESNR},// S18: NOAS
+	{   11,  11,   11,  11,   11,    12,   11,  11, 11,  11, 11},// S11: NOFS
+	{  FS,  FS,   FS,   FS,    FS,   FS,   FS,   FS,   FS,   FS,    FS},// S12: FSNR
+	{   13,   13,   13,  13,    13,    14,   13,  13, 13,  13, 13},// S13: NOFS
+	{   FS,  FS,   FS,   FS,    FS,   FS,  FS,   FS,   FS,   FS,    FS},// S14: FSNR
+	{   ESNR,   ESNR,   ESNR,  ESNR,    ESNR,    ESNR,   ESNR,  16, ESNR,  ESNR, ESNR},// S15: NOAS
+	{   17,   17,   17,  17,    17,    17,   17,  ESNR, 17,  17, 17},// S16: NOAS
+	{   17,   17,   17,  17,    17,    17,   17,  18, 17,  17, 17},// S17: NOAS
+	{   17,   17,   17,  17,    17,    17,   19,  17, 17,  17, 17},// S18: NOAS
 	{   FS,  FS,   FS,   FS,    FS,   FS,  FS,   FS,   FS,   FS,    FS},// S19: NOAS
 };
 
@@ -221,14 +226,14 @@ static jamesr_intg stateType[NUM_STATES] = {
 	NOFS, /* 09 */
 	FSNR, /* 10 (SCL) single comment line*/
 	NOFS, /* 11 */
-	FSNR, /* 12 (MID) - Methods */
-	FSWR, /* 13 (KEY) */
-	NOFS, /* 14 */
-	FSNR, /* 15 */
+	FSNR, /* 12 (String) - String Literal*/
+	NOFS, /* 13 */
+	FSNR, /* 14 (String) - String Literal*/
+	NOFS, /* 15 */
 	NOFS, /* 16 */
-	FSNR, /* 17  */
-	FSNR, /* 18 */
-	FSWR  /* 19 */
+	NOFS, /* 17 */
+	NOFS, /* 18 */
+	FSWR  /* 19 (MLC) multiple line comment*/
 };
 
 /*
@@ -260,7 +265,8 @@ Token funcID	(jamesr_string lexeme);
 Token funcCMT   (jamesr_string lexeme);
 Token funcKEY	(jamesr_string lexeme);
 Token funcErr	(jamesr_string lexeme);
-
+Token funcMLC   (jamesr_string lexeme);
+Token funcFL    (jamesr_string lexeme);
 /* 
  * Accepting function (action) callback table (array) definition 
  * If you do not want to use the typedef, the equvalent declaration is:
@@ -268,16 +274,26 @@ Token funcErr	(jamesr_string lexeme);
 
 /* TO_DO: Define final state table */
 static PTR_ACCFUN finalStateTable[NUM_STATES] = {
-	NULL,		/* -    [00] */
-	NULL,		/* -    [01] */
-	funcID,		/* MNID	[02] */
-	funcKEY,	/* KEY  [03] */
-	NULL,		/* -    [04] */
-	funcSL,		/* SL   [05] */
-	NULL,		/* -    [06] */
-	funcCMT,	/* COM  [07] */
-	funcErr,	/* ERR1 [06] */
-	funcErr		/* ERR2 [07] */
+	NULL, /* 00 */
+	NULL, /* 01 */
+	funcID, /* 02 (VID|MET|KEY) -  */
+	NULL, /* 03  */
+	funcIL, /* 04 (IL)Integer Literal*/
+	NULL, /* 05*/
+	NULL, /* 06*/
+	funcFL, /* 07 (FL)Float Literal*/
+	NULL, /* 08 */
+	NULL, /* 09 */
+	funcCMT, /* 10 (SCL) single comment line*/
+	NULL, /* 11 */
+	funcSL, /* 12 (String) - String Literal*/
+	NULL, /* 13 */
+	funcSL, /* 14 (String) - String Literal*/
+	NULL, /* 15 */
+	NULL, /* 16 */
+	NULL, /* 17 */
+	NULL, /* 18 */
+	funcMLC  /* 19 (MLC) multiple line comment*/
 };
 
 /*
@@ -291,16 +307,16 @@ Language keywords
 
 /* TO_DO: Define the list of keywords */
 static jamesr_string keywordTable[KWT_SIZE] = {
-	"data",		/* KW00 */
-	"code",		/* KW01 */
-	"int",		/* KW02 */
-	"real",		/* KW03 */
-	"string",	/* KW04 */
-	"if",		/* KW05 */
-	"then",		/* KW06 */
-	"else",		/* KW07 */
-	"while",	/* KW08 */
-	"do"		/* KW09 */
+	"if",		/* KW00 */
+	"else",		/* KW01 */
+	"while",    /* KW02 */
+	"do",		/* KW03 */
+	"FALSE",	/* KW04 */
+	"function", /* KW05 */
+	"break",	/* KW06 */
+	"next",		/* KW07 */
+	"NULL",	   /* KW08 */
+	"TRUE"		/* KW09 */
 };
 
 /* NEW SECTION: About indentation */

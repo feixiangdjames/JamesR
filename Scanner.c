@@ -305,14 +305,22 @@ jamesr_intg nextClass(jamesr_char c) {
 		val = 3;
 		break;
 	case CHRCOL4:
-		val = 4;
+		val = 5;
+		break;
+	case CHRCOL5:
+		val = 5;
 		break;
 	case CHRCOL6:
 		val = 6;
 		break;
-	case CHARSEOF0:
-	case CHARSEOF255:
-		val = 5;
+	case CHRCOL7:
+		val = 7;
+		break;
+	case CHRCOL8:
+		val = 8;
+		break;
+	case CHRCOL9:
+		val = 9;
 		break;
 	default:
 		if (isalpha(c))
@@ -320,7 +328,7 @@ jamesr_intg nextClass(jamesr_char c) {
 		else if (isdigit(c))
 			val = 1;
 		else
-			val = 7;
+			val = 11;
 	}
 	return val;
 }
@@ -518,6 +526,17 @@ Token funcErr(jamesr_string lexeme) {
 	return currentToken;
 }
 
+Token funcFL(jamesr_string lexeme) {
+	Token currentToken = { 0 };
+	
+	return currentToken;
+}
+
+Token funcMLC(jamesr_string lexeme) {
+	Token currentToken = { 0 };
+
+	return currentToken;
+}
 
 /*
  ************************************************************
