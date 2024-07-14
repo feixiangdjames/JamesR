@@ -163,20 +163,19 @@ Token tokenizer(jamesr_void) {
 		case '\n':
 			line++;
 			break;
-
 		/* Cases for symbols */
 		/*case ';':
 			currentToken.code = EOS_T;
 			scData.scanHistogram[currentToken.code]++;
 			return currentToken;*/
-		case '(':
-			currentToken.code = LPR_T;
-			scData.scanHistogram[currentToken.code]++;
-			return currentToken;
-		case ')':
-			currentToken.code = RPR_T;
-			scData.scanHistogram[currentToken.code]++;
-			return currentToken;
+		//case '(':
+		//	currentToken.code = LPR_T;
+		//	scData.scanHistogram[currentToken.code]++;
+		//	return currentToken;
+		//case ')':
+		//	currentToken.code = RPR_T;
+		//	scData.scanHistogram[currentToken.code]++;
+		//	return currentToken;
 	/*	case '{':
 			currentToken.code = LBR_T;
 			scData.scanHistogram[currentToken.code]++;
@@ -206,6 +205,7 @@ Token tokenizer(jamesr_void) {
 		/* TO_DO: Adjust / check the logic for your language */
 
 		default: // general case
+		
 			state = nextState(state, c);
 			lexStart = readerGetPosRead(sourceBuffer) - 1;
 			readerSetMark(sourceBuffer, lexStart);
@@ -219,15 +219,19 @@ Token tokenizer(jamesr_void) {
 				readerRetract(sourceBuffer);
 			lexEnd = readerGetPosRead(sourceBuffer);
 			lexLength = lexEnd - lexStart;
+		
 			lexemeBuffer = readerCreate((jamesr_intg)lexLength + 2, 0, MODE_FIXED);
+			
 			if (!lexemeBuffer) {
 				fprintf(stderr, "Scanner error: Can not create buffer\n");
 				exit(1);
 			}
 			readerRestore(sourceBuffer);
+			
 			for (i = 0; i < lexLength; i++)
 				readerAddChar(lexemeBuffer, readerGetChar(sourceBuffer));
 			readerAddChar(lexemeBuffer, READER_TERMINATOR);
+			
 			currentToken = (*finalStateTable[state])(readerGetContent(lexemeBuffer, 0));
 			readerRestore(lexemeBuffer);
 			return currentToken;
@@ -305,7 +309,7 @@ jamesr_intg nextClass(jamesr_char c) {
 		val = 3;
 		break;
 	case CHRCOL4:
-		val = 5;
+		val = 4;
 		break;
 	case CHRCOL5:
 		val = 5;
@@ -370,13 +374,17 @@ Token funcCMT(jamesr_string lexeme) {
 Token funcIL(jamesr_string lexeme) {
 	Token currentToken = { 0 };
 	jamesr_long tlong;
+	
 	if (lexeme[0] != '\0' && strlen(lexeme) > NUM_LEN) {
+	
 		currentToken = (*finalStateTable[ESNR])(lexeme);
 	}
 	else {
 		tlong = atol(lexeme);
 		if (tlong >= 0 && tlong <= SHRT_MAX) {
+			
 			currentToken.code = INL_T;
+			
 			scData.scanHistogram[currentToken.code]++;
 			currentToken.attribute.intValue = (jamesr_intg)tlong;
 		}
@@ -446,21 +454,22 @@ Token funcSL(jamesr_string lexeme) {
 	for (i = 1; i < len - 1; i++) {
 		if (lexeme[i] == '\n')
 			line++;
-		if (!readerAddChar(stringLiteralTable, lexeme[i])) {
-			currentToken.code = RTE_T;
-			scData.scanHistogram[currentToken.code]++;
-			strcpy(currentToken.attribute.errLexeme, "Run Time Error:");
-			errorNumber = RTE_CODE;
-			return currentToken;
-		}
+		//	if (!readerAddChar(stringLiteralTable, lexeme[i])) {
+		//		currentToken.code = RTE_T;
+		//		scData.scanHistogram[currentToken.code]++;
+		//		strcpy(currentToken.attribute.errLexeme, "Run Time Error:");
+		//		errorNumber = RTE_CODE;
+		//		return currentToken;
+		//	}
+		//}
 	}
-	if (!readerAddChar(stringLiteralTable, CHARSEOF0)) {
-		currentToken.code = RTE_T;
-		scData.scanHistogram[currentToken.code]++;
-		strcpy(currentToken.attribute.errLexeme, "Run Time Error:");
-		errorNumber = RTE_CODE;
-		return currentToken;
-	}
+	//if (!readerAddChar(stringLiteralTable, CHARSEOF0)) {
+	//	currentToken.code = RTE_T;
+	//	scData.scanHistogram[currentToken.code]++;
+	//	strcpy(currentToken.attribute.errLexeme, "Run Time Error:");
+	//	errorNumber = RTE_CODE;
+	//	return currentToken;
+	//}
 	currentToken.code = STR_T;
 	scData.scanHistogram[currentToken.code]++;
 	return currentToken;
@@ -546,15 +555,10 @@ Token funcMLC(jamesr_string lexeme) {
 
 jamesr_void printToken(Token t) {
 	extern jamesr_string keywordTable[]; /* link to keyword table in */
+
 	switch (t.code) {
-	case RTE_T:
-		printf("RTE_T\t\t%s", t.attribute.errLexeme);
-		/* Call here run-time error handling component */
-		if (errorNumber) {
-			printf("%d", errorNumber);
-			exit(errorNumber);
-		}
-		printf("\n");
+	case INL_T:
+		printf("INL_T\t\t%d\n", t.attribute.intValue);
 		break;
 	case ERR_T:
 		printf("ERR_T\t\t%s\n", t.attribute.errLexeme);
@@ -566,30 +570,30 @@ jamesr_void printToken(Token t) {
 		printf("MNID_T\t\t%s\n", t.attribute.idLexeme);
 		break;
 	case STR_T:
-		printf("STR_T\t\t%d\t ", (jamesr_intg)t.attribute.codeType);
-		printf("%s\n", readerGetContent(stringLiteralTable, (jamesr_intg)t.attribute.codeType));
+		printf("STR_T\t\t%d\t ",t.attribute.contentString);
+		printf("%s\n", readerGetContent(stringLiteralTable, (jamesr_intg)t.attribute.contentString));
 		break;
-	case LPR_T:
-		printf("LPR_T\n");
-		break;
-	case RPR_T:
-		printf("RPR_T\n");
-		break;
-	case LBR_T:
-		printf("LBR_T\n");
-		break;
-	case RBR_T:
-		printf("RBR_T\n");
-		break;
+	//case LPR_T:
+	//	printf("LPR_T\n");
+	//	break;
+	//case RPR_T:
+	//	printf("RPR_T\n");
+	//	break;
+	//case LBR_T:
+	//	printf("LBR_T\n");
+	//	break;
+	//case RBR_T:
+	//	printf("RBR_T\n");
+	//	break;
 	case KW_T:
 		printf("KW_T\t\t%s\n", keywordTable[t.attribute.codeType]);
 		break;
 	case CMT_T:
 		printf("CMT_T\n");
 		break;
-	case EOS_T:
-		printf("EOS_T\n");
-		break;
+	//case EOS_T:
+	//	printf("EOS_T\n");
+	//	break;
 	default:
 		printf("Scanner error: invalid token code: %d\n", t.code);
 	}

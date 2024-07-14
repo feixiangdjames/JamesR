@@ -69,7 +69,7 @@
 #define RTE_CODE 1  /* Value for run-time error */
 
 /* TO_DO: Define the number of tokens */
-#define NUM_TOKENS 13
+#define NUM_TOKENS 9
 
 /* TO_DO: Define Token codes - Create your token classes */
 enum TOKENS {
@@ -77,15 +77,18 @@ enum TOKENS {
 	MNID_T,		/*  1: Method name identifier token (start: &) */
 	INL_T,		/*  2: Integer literal token */
 	STR_T,		/*  3: String literal token */
-	LPR_T,		/*  4: Left parenthesis token */
-	RPR_T,		/*  5: Right parenthesis token */
-	LBR_T,		/*  6: Left brace token */
-	RBR_T,		/*  7: Right brace token */
+	FOL_T,      /*  4: Float literal token */
+	MLC_T,      /*5: Multi line comment token*/
+	//LPR_T,		/*  4: Left parenthesis token */
+	//RPR_T,		/*  5: Right parenthesis token */
+	//LBR_T,		/*  6: Left brace token */
+	//RBR_T,		/*  7: Right brace token */
 	KW_T,		/*  8: Keyword token */
-	EOS_T,		/*  9: End of statement (semicolon) */
-	RTE_T,		/* 10: Run-time error token */
+	//EOS_T,		/*  9: End of statement (semicolon) */
+	//RTE_T,		/* 10: Run-time error token */
 	SEOF_T,		/* 11: Source end-of-file token */
 	CMT_T		/* 12: Comment token */
+	
 };
 
 /* TO_DO: Define the list of keywords */
@@ -94,13 +97,15 @@ static jamesr_string tokenStrTable[NUM_TOKENS] = {
 	"MNID_T",
 	"INL_T",
 	"STR_T",
-	"LPR_T",
-	"RPR_T",
-	"LBR_T",
-	"RBR_T",
+	"FOL_T",
+	"MLC_T",
+	//"LPR_T",
+	//"RPR_T",
+	//"LBR_T",
+	//"RBR_T",
 	"KW_T",
-	"EOS_T",
-	"RTE_T",
+	//"EOS_T",
+	//"RTE_T",
 	"SEOF_T",
 	"CMT_T"
 };
@@ -162,7 +167,7 @@ typedef struct scannerData {
 #define CHRCOL3 '.'
 #define CHRCOL4 '#'
 #define CHRCOL5 '\''
-#define CHRCOL6 '"'
+#define CHRCOL6 '\"'
 #define CHRCOL7 '/'
 #define CHRCOL8 '*'
 #define CHRCOL9 '-'
@@ -185,26 +190,26 @@ typedef struct scannerData {
 static jamesr_intg transitionTable[NUM_STATES][CHAR_CLASSES] = {
 /*    [A-z],[0-9],  _,    .,   #,    ',     ",    /,     *,      -,    /n,   Others
 	  L(0), D(1), U(2), P(3), A(4), Q(5),  R(6) , S(7), W(8),   H(9),  E(10), O(11) */
-	{   1,   3,   ESNR,   5,    8,   11,  13,  15, ESNR,  ESNR, ESNR,   ESNR},// S0: NOAS
-	{   1,   1,    2,     2,    2,    2,    2,    2,    2,    2,   2,     2},// S1: FSWR
-    {   FS,  FS,   FS,   FS,    FS,   FS,   FS,   FS,   FS,   FS,  FS,    FS},// S2: FSWR
-    {   4,   1,    4,     5,     4,    4,    4,    4,    4,    4,   4,     4},// S3: NOAS
-	{   FS,  FS,   FS,   FS,    FS,   FS,   FS,   FS,   FS,   FS,   FS,   FS},// S4: FSWR
-	{  ESNR, 6,   ESNR,  ESNR,  ESNR, ESNR, ESNR, ESNR, ESNR, ESNR,ESNR,ESNR},// S5: NOAS
+	{   1,   3,   ESNR,   5,    8,   11,    13,   15,  ESNR,   ESNR,  ESNR,   ESNR},// S0: NOAS
+	{   1,   1,    2,     2,    2,    2,    2,    2,    2,      2,     2,      2},// S1: FSWR
+    {   FS,  FS,   FS,   FS,    FS,   FS,   FS,   FS,   FS,     FS,    FS,    FS},// S2: FSWR
+    {   4,   3,    4,     5,     4,    4,    4,    4,    4,     4,     4,     4},// S3: NOAS
+	{   FS,  FS,   FS,   FS,    FS,   FS,   FS,   FS,   FS,      FS,   FS,   FS},// S4: FSWR
+	{   ESNR, 6,   ESNR,  ESNR,  ESNR, ESNR, ESNR, ESNR, ESNR, ESNR,ESNR,ESNR},// S5: NOAS
 	{   7,   6,     7,     7,    7,     7,   7,     7,    7,   7,  7,  7},// S6: NOAS
 	{   FS,  FS,   FS,   FS,    FS,   FS,   FS,   FS,   FS,   FS,  FS,  FS},// S7: FSWR
-	{   9,   9,   9,  9,    9,    9,   9,  9, 9,  9, ESNR,9},// S8: NOAS
-	{   9,  9,   9,   9,    9,   9,   9,   9,   9,   10, 9},// S9:NOAS
-	{   FS,  FS,   FS,   FS,    FS,   FS,   FS,   FS,   FS,   FS,    FS},// S10: FSNR
-	{   11,  11,   11,  11,   11,    12,   11,  11, 11,  11, 11},// S11: NOFS
-	{  FS,  FS,   FS,   FS,    FS,   FS,   FS,   FS,   FS,   FS,    FS},// S12: FSNR
-	{   13,   13,   13,  13,    13,    14,   13,  13, 13,  13, 13},// S13: NOFS
-	{   FS,  FS,   FS,   FS,    FS,   FS,  FS,   FS,   FS,   FS,    FS},// S14: FSNR
-	{   ESNR,   ESNR,   ESNR,  ESNR,    ESNR,    ESNR,   ESNR,  16, ESNR,  ESNR, ESNR},// S15: NOAS
-	{   17,   17,   17,  17,    17,    17,   17,  ESNR, 17,  17, 17},// S16: NOAS
-	{   17,   17,   17,  17,    17,    17,   17,  18, 17,  17, 17},// S17: NOAS
-	{   17,   17,   17,  17,    17,    17,   19,  17, 17,  17, 17},// S18: NOAS
-	{   FS,  FS,   FS,   FS,    FS,   FS,  FS,   FS,   FS,   FS,    FS},// S19: NOAS
+	{   9,   9,     9,   9,     9,    9,    9,    9,     9,   9,  ESNR,  9},// S8: NOAS
+	{   9,  9,      9,   9,     9,   9,     9,   9,      9,   10,  9,     9},// S9:NOAS
+	{   FS,  FS,   FS,   FS,    FS,   FS,   FS,   FS,   FS,   FS, FS,   FS},// S10: FSNR
+	{   11,  11,   11,   11,    11,   12,   11,   11,   11,   11,  11,   11},// S11: NOFS
+	{   FS,  FS,   FS,   FS,    FS,   FS,   FS,   FS,   FS,   FS, FS  , FS},// S12: FSNR
+	{   13,   13,   13,  13,    13,   14,   13,   13,   13,   13, 13,   13},// S13: NOFS
+	{   FS,  FS,   FS,   FS,    FS,   FS,  FS,   FS,   FS,    FS, FS  , FS},// S14: FSNR
+	{   ESNR,   ESNR,   ESNR,  ESNR,    ESNR,    ESNR,   ESNR,  16, ESNR,  ESNR,ESNR, ESNR},// S15: NOAS
+	{   17,   17,   17,  17,    17,    17,   17,  ESNR, 17,  17, 17, 17},// S16: NOAS
+	{   17,   17,   17,  17,    17,    17,   17,  18, 17,  17, 17, 17},// S17: NOAS
+	{   17,   17,   17,  17,    17,    17,   19,  17, 17,  17, 17,17},// S18: NOAS
+	{   FS,  FS,   FS,   FS,    FS,   FS,  FS,   FS,   FS,   FS,   FS,    FS},// S19: NOAS
 };
 
 /* Define accepting states types */
