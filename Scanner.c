@@ -273,6 +273,7 @@ jamesr_intg nextState(jamesr_intg state, jamesr_char c) {
 	jamesr_intg next;
 	col = nextClass(c);
 	next = transitionTable[state][col];
+	
 	if (DEBUG)
 		printf("Input symbol: %c Row: %d Column: %d Next: %d \n", c, state, col, next);
 	assert(next != FS);
@@ -326,6 +327,9 @@ jamesr_intg nextClass(jamesr_char c) {
 	case CHRCOL9:
 		val = 9;
 		break;
+	case CHRCOL10:
+		val = 10;
+		break;
 	default:
 		if (isalpha(c))
 			val = 0;
@@ -346,6 +350,7 @@ jamesr_intg nextClass(jamesr_char c) {
  /* TO_DO: Adjust the function for IL */
 
 Token funcCMT(jamesr_string lexeme) {
+
 	Token currentToken = { 0 };
 	jamesr_intg i = 0, len = (jamesr_intg)strlen(lexeme);
 	currentToken.attribute.contentString = readerGetPosWrte(stringLiteralTable);
@@ -411,26 +416,33 @@ Token funcIL(jamesr_string lexeme) {
  /* TO_DO: Adjust the function for ID */
 
 Token funcID(jamesr_string lexeme) {
+
 	Token currentToken = { 0 };
 	size_t length = strlen(lexeme);
-	jamesr_char lastch = lexeme[length - 1];
-	jamesr_intg isID = JAMESR_FALSE;
-	switch (lastch) {
-		case MNID_SUF:
-			currentToken.code = MNID_T;
-			scData.scanHistogram[currentToken.code]++;
-			isID = JAMESR_TRUE;
-			break;
-		default:
-			// Test Keyword
-			lexeme[length - 1] = '\0';
-			currentToken = funcKEY(lexeme);
-			break;
-	}
-	if (isID == JAMESR_TRUE) {
+	//jamesr_char lastch = lexeme[length - 1];
+	//jamesr_intg isID = JAMESR_FALSE;
+	//switch (lastch) {
+	//	case MNID_SUF:
+	//		currentToken.code = MNID_T;
+	//		scData.scanHistogram[currentToken.code]++;
+	//		isID = JAMESR_TRUE;
+	//		break;
+	//	default:
+	//		// Test Keyword
+	//		lexeme[length - 1] = '\0';
+	//		currentToken = funcKEY(lexeme);
+	//		break;
+	//}
+	//if (isID == JAMESR_TRUE) {
+
+	
+		scData.scanHistogram[currentToken.code]++;
 		strncpy(currentToken.attribute.idLexeme, lexeme, VID_LEN);
 		currentToken.attribute.idLexeme[VID_LEN] = CHARSEOF0;
-	}
+	
+	currentToken.code = MNID_T;
+
+	//}
 	return currentToken;
 }
 
@@ -454,22 +466,22 @@ Token funcSL(jamesr_string lexeme) {
 	for (i = 1; i < len - 1; i++) {
 		if (lexeme[i] == '\n')
 			line++;
-		//	if (!readerAddChar(stringLiteralTable, lexeme[i])) {
-		//		currentToken.code = RTE_T;
-		//		scData.scanHistogram[currentToken.code]++;
-		//		strcpy(currentToken.attribute.errLexeme, "Run Time Error:");
-		//		errorNumber = RTE_CODE;
-		//		return currentToken;
-		//	}
-		//}
-	}
-	//if (!readerAddChar(stringLiteralTable, CHARSEOF0)) {
-	//	currentToken.code = RTE_T;
-	//	scData.scanHistogram[currentToken.code]++;
-	//	strcpy(currentToken.attribute.errLexeme, "Run Time Error:");
-	//	errorNumber = RTE_CODE;
-	//	return currentToken;
-	//}
+			if (!readerAddChar(stringLiteralTable, lexeme[i])) {
+				currentToken.code = RTE_T;
+				scData.scanHistogram[currentToken.code]++;
+				strcpy(currentToken.attribute.errLexeme, "Run Time Error:");
+				errorNumber = RTE_CODE;
+				return currentToken;
+			}
+		}
+	
+	if (!readerAddChar(stringLiteralTable, CHARSEOF0)) {
+		currentToken.code = RTE_T;
+		scData.scanHistogram[currentToken.code]++;
+		strcpy(currentToken.attribute.errLexeme, "Run Time Error:");
+	errorNumber = RTE_CODE;
+	return currentToken;
+}
 	currentToken.code = STR_T;
 	scData.scanHistogram[currentToken.code]++;
 	return currentToken;
@@ -537,13 +549,38 @@ Token funcErr(jamesr_string lexeme) {
 
 Token funcFL(jamesr_string lexeme) {
 	Token currentToken = { 0 };
-	
+	jamesr_real tfloat;
+
+	if (lexeme[0] != '\0' && strlen(lexeme) > NUM_LEN) {
+
+		currentToken = (*finalStateTable[ESNR])(lexeme);
+	}
+	else {
+		tfloat = atof(lexeme);
+		if (tfloat >= 0 && tfloat <= SHRT_MAX) {
+
+			currentToken.code = FOL_T;
+
+			scData.scanHistogram[currentToken.code]++;
+			currentToken.attribute.floatValue = (jamesr_real)tfloat;
+		}
+		else {
+			currentToken = (*finalStateTable[ESNR])(lexeme);
+		}
+	}
 	return currentToken;
 }
 
 Token funcMLC(jamesr_string lexeme) {
 	Token currentToken = { 0 };
-
+	jamesr_intg i = 0, len = (jamesr_intg)strlen(lexeme);
+	currentToken.attribute.contentString = readerGetPosWrte(stringLiteralTable);
+	for (i = 1; i < len - 1; i++) {
+		if (lexeme[i] == '\n')
+			line++;
+	}
+	currentToken.code = MLC_T;
+	scData.scanHistogram[currentToken.code]++;
 	return currentToken;
 }
 
@@ -564,36 +601,30 @@ jamesr_void printToken(Token t) {
 		printf("ERR_T\t\t%s\n", t.attribute.errLexeme);
 		break;
 	case SEOF_T:
-		printf("SEOF_T\t\t%d\t\n", t.attribute.seofType);
+		printf("SEOF_T\t\t%d\n", t.attribute.seofType);
+		break;
+	case FOL_T:
+		printf("FOL_T\t\t%f\n", t.attribute.floatValue);
 		break;
 	case MNID_T:
 		printf("MNID_T\t\t%s\n", t.attribute.idLexeme);
+		break;
+	case MLC_T:
+		printf("MLC_T\t\t%d\t ", t.attribute.contentString);
+		printf("%s\n", readerGetContent(stringLiteralTable, (jamesr_intg)t.attribute.contentString));
 		break;
 	case STR_T:
 		printf("STR_T\t\t%d\t ",t.attribute.contentString);
 		printf("%s\n", readerGetContent(stringLiteralTable, (jamesr_intg)t.attribute.contentString));
 		break;
-	//case LPR_T:
-	//	printf("LPR_T\n");
-	//	break;
-	//case RPR_T:
-	//	printf("RPR_T\n");
-	//	break;
-	//case LBR_T:
-	//	printf("LBR_T\n");
-	//	break;
-	//case RBR_T:
-	//	printf("RBR_T\n");
-	//	break;
 	case KW_T:
 		printf("KW_T\t\t%s\n", keywordTable[t.attribute.codeType]);
 		break;
 	case CMT_T:
-		printf("CMT_T\n");
+		printf("CMT_T\t\t%d\t ", t.attribute.contentString);
+		printf("%s\n", readerGetContent(stringLiteralTable, (jamesr_intg)t.attribute.contentString));
 		break;
-	//case EOS_T:
-	//	printf("EOS_T\n");
-	//	break;
+
 	default:
 		printf("Scanner error: invalid token code: %d\n", t.code);
 	}

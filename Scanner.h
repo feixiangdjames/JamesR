@@ -64,12 +64,12 @@
 /* Constants */
 #define VID_LEN 20  /* variable identifier length */
 #define ERR_LEN 40  /* error message length */
-#define NUM_LEN 5   /* maximum number of digits for IL */
+#define NUM_LEN 10   /* maximum number of digits for IL */
 
 #define RTE_CODE 1  /* Value for run-time error */
 
 /* TO_DO: Define the number of tokens */
-#define NUM_TOKENS 9
+#define NUM_TOKENS 10
 
 /* TO_DO: Define Token codes - Create your token classes */
 enum TOKENS {
@@ -85,7 +85,7 @@ enum TOKENS {
 	//RBR_T,		/*  7: Right brace token */
 	KW_T,		/*  8: Keyword token */
 	//EOS_T,		/*  9: End of statement (semicolon) */
-	//RTE_T,		/* 10: Run-time error token */
+	RTE_T,		/* 10: Run-time error token */
 	SEOF_T,		/* 11: Source end-of-file token */
 	CMT_T		/* 12: Comment token */
 	
@@ -105,7 +105,7 @@ static jamesr_string tokenStrTable[NUM_TOKENS] = {
 	//"RBR_T",
 	"KW_T",
 	//"EOS_T",
-	//"RTE_T",
+	"RTE_T",
 	"SEOF_T",
 	"CMT_T"
 };
@@ -171,16 +171,16 @@ typedef struct scannerData {
 #define CHRCOL7 '/'
 #define CHRCOL8 '*'
 #define CHRCOL9 '-'
-#define CHRCOL10 '/n'
+#define CHRCOL10 '\n'
 #
 /* These constants will be used on VID / MID function */
 #define MNID_SUF '&'
 #define COMM_SYM '#'
 
 /* TO_DO: Error states and illegal state */
-#define ESNR	8		/* Error state with no retract */
-#define ESWR	9		/* Error state with retract */
-#define FS		10		/* Illegal state */
+#define ESNR	30		/* Error state with no retract */
+#define ESWR	31		/* Error state with retract */
+#define FS		32		/* Illegal state */
 
  /* TO_DO: State transition table definition */
 #define NUM_STATES		20
@@ -199,17 +199,17 @@ static jamesr_intg transitionTable[NUM_STATES][CHAR_CLASSES] = {
 	{   7,   6,     7,     7,    7,     7,   7,     7,    7,   7,  7,  7},// S6: NOAS
 	{   FS,  FS,   FS,   FS,    FS,   FS,   FS,   FS,   FS,   FS,  FS,  FS},// S7: FSWR
 	{   9,   9,     9,   9,     9,    9,    9,    9,     9,   9,  ESNR,  9},// S8: NOAS
-	{   9,  9,      9,   9,     9,   9,     9,   9,      9,   10,  9,     9},// S9:NOAS
+	{   9,  9,      9,   9,     9,    9,     9,   9,      9,  9,  10,    9},// S9:NOAS
 	{   FS,  FS,   FS,   FS,    FS,   FS,   FS,   FS,   FS,   FS, FS,   FS},// S10: FSNR
 	{   11,  11,   11,   11,    11,   12,   11,   11,   11,   11,  11,   11},// S11: NOFS
 	{   FS,  FS,   FS,   FS,    FS,   FS,   FS,   FS,   FS,   FS, FS  , FS},// S12: FSNR
 	{   13,   13,   13,  13,    13,   14,   13,   13,   13,   13, 13,   13},// S13: NOFS
 	{   FS,  FS,   FS,   FS,    FS,   FS,  FS,   FS,   FS,    FS, FS  , FS},// S14: FSNR
-	{   ESNR,   ESNR,   ESNR,  ESNR,    ESNR,    ESNR,   ESNR,  16, ESNR,  ESNR,ESNR, ESNR},// S15: NOAS
-	{   17,   17,   17,  17,    17,    17,   17,  ESNR, 17,  17, 17, 17},// S16: NOAS
-	{   17,   17,   17,  17,    17,    17,   17,  18, 17,  17, 17, 17},// S17: NOAS
-	{   17,   17,   17,  17,    17,    17,   19,  17, 17,  17, 17,17},// S18: NOAS
-	{   FS,  FS,   FS,   FS,    FS,   FS,  FS,   FS,   FS,   FS,   FS,    FS},// S19: NOAS
+	{   ESNR,   ESNR,   ESNR,  ESNR,    ESNR,    ESNR,   ESNR,  ESNR, 16,  ESNR,ESNR, ESNR},// S15: NOAS
+	{   17,   17,   17,  17,    17,    17,   17,  17, ESNR,  17, 17, 17},// S16: NOAS
+	{   17,   17,   17,  17,    17,    17,   17,  17, 18,  17, 17, 17},// S17: NOAS
+	{   17,   17,   17,  17,    17,    17,   17,  19, 17,  17, 17,17},// S18: NOAS
+	{   FS,  FS,   FS,   FS,    FS,   FS,  FS,   FS,   FS,   FS,   FS,    FS},// S19: FSWR
 };
 
 /* Define accepting states types */
@@ -238,7 +238,7 @@ static jamesr_intg stateType[NUM_STATES] = {
 	NOFS, /* 16 */
 	NOFS, /* 17 */
 	NOFS, /* 18 */
-	FSWR  /* 19 (MLC) multiple line comment*/
+	FSNR  /* 19 (MLC) multiple line comment*/
 };
 
 /*
