@@ -168,22 +168,30 @@ Token tokenizer(jamesr_void) {
 			currentToken.code = EOS_T;
 			scData.scanHistogram[currentToken.code]++;
 			return currentToken;*/
-		//case '(':
-		//	currentToken.code = LPR_T;
-		//	scData.scanHistogram[currentToken.code]++;
-		//	return currentToken;
-		//case ')':
-		//	currentToken.code = RPR_T;
-		//	scData.scanHistogram[currentToken.code]++;
-		//	return currentToken;
-	/*	case '{':
+		case '(':
+			currentToken.code = LPR_T;
+			scData.scanHistogram[currentToken.code]++;
+			return currentToken;
+		case ')':
+			currentToken.code = RPR_T;
+			scData.scanHistogram[currentToken.code]++;
+			return currentToken;
+	case '{':
 			currentToken.code = LBR_T;
 			scData.scanHistogram[currentToken.code]++;
 			return currentToken;
 		case '}':
 			currentToken.code = RBR_T;
 			scData.scanHistogram[currentToken.code]++;
-			return currentToken;*/
+			return currentToken;
+		case '<':
+			currentToken.code = LT_T;
+			scData.scanHistogram[currentToken.code]++;
+			return currentToken;
+		case '-':
+			currentToken.code = HP_T;
+			scData.scanHistogram[currentToken.code]++;
+			return currentToken;
 		/* Cases for END OF FILE */
 		case CHARSEOF0:
 			currentToken.code = SEOF_T;
@@ -625,6 +633,24 @@ jamesr_void printToken(Token t) {
 		printf("%s\n", readerGetContent(stringLiteralTable, (jamesr_intg)t.attribute.contentString));
 		break;
 
+	case LPR_T:
+		printf("LPR_T\t\t%c\t\n ", '(');
+		break;
+	case RPR_T:
+		printf("RPR_T\t\t%c\t\n", '(');
+		break;
+	case LBR_T:
+		printf("LBR_T\t\t%c\t\n ", '{');
+		break;
+	case LT_T:
+		printf("LT_T\t\t%c\t\n", '<');
+		break;
+	case HP_T:
+		printf("HP_T\t\t%c\t\n ", '-');
+		break;
+	case RBR_T:
+		printf("RBR_T\t\t%c\t\n ", '}');
+		break;
 	default:
 		printf("Scanner error: invalid token code: %d\n", t.code);
 	}
