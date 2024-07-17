@@ -442,15 +442,23 @@ Token funcID(jamesr_string lexeme) {
 	//		break;
 	//}
 	//if (isID == JAMESR_TRUE) {
-
-	
+	jamesr_intg kwindex = -1, j = 0;
+	for (j = 0; j < KWT_SIZE; j++)
+		if (!strcmp(lexeme, &keywordTable[j][0]))
+			kwindex = j;
+	if (kwindex != -1) {
+		currentToken.code = KW_T;
+		scData.scanHistogram[currentToken.code]++;
+		currentToken.attribute.codeType = kwindex;
+	}
+	else {
+		
 		scData.scanHistogram[currentToken.code]++;
 		strncpy(currentToken.attribute.idLexeme, lexeme, VID_LEN);
 		currentToken.attribute.idLexeme[VID_LEN] = CHARSEOF0;
-	
-	currentToken.code = MNID_T;
-
-	//}
+		currentToken.code = MNID_T;
+	}
+		
 	return currentToken;
 }
 
@@ -508,7 +516,7 @@ Token funcKEY(jamesr_string lexeme) {
 	Token currentToken = { 0 };
 	jamesr_intg kwindex = -1, j = 0;
 	jamesr_intg len = (jamesr_intg)strlen(lexeme);
-	lexeme[len - 1] = '\0';
+
 	for (j = 0; j < KWT_SIZE; j++)
 		if (!strcmp(lexeme, &keywordTable[j][0]))
 			kwindex = j;
