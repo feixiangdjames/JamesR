@@ -69,7 +69,7 @@
 #define RTE_CODE 1  /* Value for run-time error */
 
 /* TO_DO: Define the number of tokens */
-#define NUM_TOKENS 16
+#define NUM_TOKENS 19
 
 /* TO_DO: Define Token codes - Create your token classes */
 enum TOKENS {
@@ -89,7 +89,10 @@ enum TOKENS {
 	SEOF_T,		/* 11: Source end-of-file token */
 	CMT_T,		/* 12: Comment token */
 	LT_T,
-	HP_T
+	HP_T,
+	COM_T,
+	ART_OP_T,
+	ASS_OP_T
 };
 
 /* TO_DO: Define the list of keywords */
@@ -110,7 +113,10 @@ static jamesr_string tokenStrTable[NUM_TOKENS] = {
 	"SEOF_T",
 	"CMT_T",
 	"LT_T",
-	"HP_T"
+	"HP_T",
+	"COM_T",
+	"ART_OP_T",
+	"ASS_OP_T"
 
 };
 
@@ -182,12 +188,12 @@ typedef struct scannerData {
 #define COMM_SYM '#'
 
 /* TO_DO: Error states and illegal state */
-#define ESNR	30		/* Error state with no retract */
-#define ESWR	31		/* Error state with retract */
+#define ESNR	20		/* Error state with no retract */
+#define ESWR	21		/* Error state with retract */
 #define FS		32		/* Illegal state */
 
  /* TO_DO: State transition table definition */
-#define NUM_STATES		20
+#define NUM_STATES		22
 #define CHAR_CLASSES	12
 
 /* TO_DO: Transition table - type of states defined in separate table */
@@ -195,7 +201,7 @@ static jamesr_intg transitionTable[NUM_STATES][CHAR_CLASSES] = {
 /*    [A-z],[0-9],  _,    .,   #,    ',     ",    /,     *,      -,    /n,  Others
 	  L(0), D(1), U(2), P(3), A(4), Q(5),  R(6) , S(7), W(8),   H(9),  E(10), O(11) */
 	{   1,   3,   ESNR,   5,    8,   11,    13,   15,  ESNR,   ESNR,  ESNR, ESNR},// S0: NOAS
-	{   1,   1,    2,     2,    2,    2,    2,    2,    2,      2,     2,    2},// S1: NOAS
+	{   1,   1,    1,     2,    2,    2,    2,    2,    2,      2,     2,    2},// S1: NOAS
     {   FS,  FS,   FS,   FS,    FS,   FS,   FS,   FS,   FS,     FS,    20,    FS},// S2: FSWR
     {   4,   3,    4,     5,     4,    4,    4,    4,    4,     4,     4,     4},// S3: NOAS
 	{   FS,  FS,   FS,   FS,    FS,   FS,   FS,   FS,   FS,      FS,   FS,   FS},// S4: FSWR
@@ -213,8 +219,9 @@ static jamesr_intg transitionTable[NUM_STATES][CHAR_CLASSES] = {
 	{   17,   17,   17,  17,    17,    17,   17,  17, ESNR,  17, 17, 17},// S16: NOAS
 	{   17,   17,   17,  17,    17,    17,   17,  17, 18,  17, 17, 17},// S17: NOAS
 	{   17,   17,   17,  17,    17,    17,   17,  19, 17,  17, 17,17},// S18: NOAS
-	{   FS,  FS,   FS,   FS,    FS,   FS,  FS,   FS,   FS,   FS,   FS,    FS}// S19: FSWR
-
+	{   FS,  FS,   FS,   FS,    FS,   FS,  FS,   FS,   FS,   FS,   FS,    FS},// S19: FSWR
+	{   FS,  FS,   FS,   FS,    FS,   FS,  FS,   FS,   FS,   FS,   FS,    FS},// S20: FSNR
+    {   FS,  FS,   FS,   FS,    FS,   FS,  FS,   FS,   FS,   FS,   FS,    FS}// S21: FSWR
 };
 
 /* Define accepting states types */
@@ -243,8 +250,9 @@ static jamesr_intg stateType[NUM_STATES] = {
 	NOFS, /* 16 */
 	NOFS, /* 17 */
 	NOFS, /* 18 */
-	FSNR  /* 19 (MLC) multiple line comment*/
-
+	FSNR,  /* 19 (MLC) multiple line comment*/
+	FSNR,
+	FSWR
 };
 
 /*
@@ -278,7 +286,7 @@ Token funcKEY	(jamesr_string lexeme);
 Token funcErr	(jamesr_string lexeme);
 Token funcMLC   (jamesr_string lexeme);
 Token funcFL    (jamesr_string lexeme);
-Token funcASV   (jamesr_string lexeme);
+//Token funcASV   (jamesr_string lexeme);
 /* 
  * Accepting function (action) callback table (array) definition 
  * If you do not want to use the typedef, the equvalent declaration is:
@@ -305,8 +313,9 @@ static PTR_ACCFUN finalStateTable[NUM_STATES] = {
 	NULL, /* 16 */
 	NULL, /* 17 */
 	NULL, /* 18 */
-	funcMLC  /* 19 (MLC) multiple line comment*/
-	
+	funcMLC,  /* 19 (MLC) multiple line comment*/
+	funcErr,
+	funcErr
 };
 
 /*

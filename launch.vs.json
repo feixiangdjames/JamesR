@@ -8,7 +8,7 @@
       "projectTarget": "Compiler.exe",
       "name": "Compiler.exe",
       "args": [
-        "s",
+        "p",
         "README.txt"
       ]
     }

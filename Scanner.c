@@ -157,6 +157,16 @@ Token tokenizer(jamesr_void) {
 
 		/* Cases for spaces */
 		case ' ':
+		case ',':
+			currentToken.code = COM_T;
+			scData.scanHistogram[currentToken.code]++;
+			return currentToken;
+		case '+':
+		case '*':
+		case '^':	
+		currentToken.code = ART_OP_T;
+			scData.scanHistogram[currentToken.code]++;
+			return currentToken;
 		case '\t':
 		case '\f':
 			break;
@@ -182,6 +192,10 @@ Token tokenizer(jamesr_void) {
 			return currentToken;
 		case '}':
 			currentToken.code = RBR_T;
+			scData.scanHistogram[currentToken.code]++;
+			return currentToken;
+		case '<-':
+			currentToken.code = ASS_OP_T;
 			scData.scanHistogram[currentToken.code]++;
 			return currentToken;
 		case '<':
@@ -453,10 +467,11 @@ Token funcID(jamesr_string lexeme) {
 	}
 	else {
 		
-		scData.scanHistogram[currentToken.code]++;
+		//scData.scanHistogram[currentToken.code]++;
 		strncpy(currentToken.attribute.idLexeme, lexeme, VID_LEN);
 		currentToken.attribute.idLexeme[VID_LEN] = CHARSEOF0;
 		currentToken.code = MNID_T;
+		scData.scanHistogram[currentToken.code]++;
 	}
 		
 	return currentToken;
@@ -572,7 +587,7 @@ Token funcFL(jamesr_string lexeme) {
 		currentToken = (*finalStateTable[ESNR])(lexeme);
 	}
 	else {
-		tfloat = atof(lexeme);
+		tfloat =(jamesr_real) atof(lexeme);
 		if (tfloat >= 0 && tfloat <= SHRT_MAX) {
 
 			currentToken.code = FOL_T;
@@ -626,19 +641,17 @@ jamesr_void printToken(Token t) {
 		printf("MNID_T\t\t%s\n", t.attribute.idLexeme);
 		break;
 	case MLC_T:
-		printf("MLC_T\t\t%d\t ", t.attribute.contentString);
-		printf("%s\n", readerGetContent(stringLiteralTable, (jamesr_intg)t.attribute.contentString));
+		printf("MLC_T\t\t%d\t\n ", t.attribute.contentString);
 		break;
 	case STR_T:
-		printf("STR_T\t\t%d\t ",t.attribute.contentString);
+		printf("STR_T\t\t%d\t\n",t.attribute.contentString);
 		printf("%s\n", readerGetContent(stringLiteralTable, (jamesr_intg)t.attribute.contentString));
 		break;
 	case KW_T:
 		printf("KW_T\t\t%s\n", keywordTable[t.attribute.codeType]);
 		break;
 	case CMT_T:
-		printf("CMT_T\t\t%d\t ", t.attribute.contentString);
-		printf("%s\n", readerGetContent(stringLiteralTable, (jamesr_intg)t.attribute.contentString));
+		printf("CMT_T\t\t%d\t\n ", t.attribute.contentString);
 		break;
 
 	case LPR_T:
